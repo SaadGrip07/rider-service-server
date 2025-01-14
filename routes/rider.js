@@ -282,7 +282,7 @@ router.post('/rider-login', async (req, res) => {
       if(rider.EMSR === "New-Registration"){
         return res.status(401).json({ message: "Your Registration is in Process" });
       }
-      if(rider.EMSR !== "Hired"){
+      if(rider.EMSR !== "Active"){
         return res.status(401).json({ message: "Your Account is Not Active Please Contact with Admin" });
       }
       if (rider.RP !== password) {
@@ -407,7 +407,7 @@ router.put('/hire-rider-direct', async (req, res) => {
 
         const result = await request.query(
             `UPDATE RidersDetail 
-            SET RUID = @RiderId, JDR = @JDateRider, URD = @UpdateRecordD, ATB = @ActionTakenBy, DCB = @DetailsCheckedBy, AT = 'Hired', EMSR = 'Hired' 
+            SET RUID = @RiderId, JDR = @JDateRider, URD = @UpdateRecordD, ATB = @ActionTakenBy, DCB = @DetailsCheckedBy, AT = 'Hired', EMSR = 'Active' 
             WHERE CNIC = @RiderCNIC`
         );
 
@@ -453,8 +453,8 @@ router.delete('/rider-delete-admin', async (req, res) => {
 
 
 
-  // Fetch all hired riders ✅
-  router.get('/hired-riders', async (req, res) => {
+  // Fetch all active riders ✅
+  router.get('/active-riders', async (req, res) => {
     try {
         await RMDBConnect;
       const request = new sql.Request();
@@ -466,21 +466,21 @@ router.delete('/rider-delete-admin', async (req, res) => {
         RCS AS RCStatus, 
         RLCLALO AS RLocationLALO
         FROM RidersDetail
-        WHERE EMSR = 'Hired'
+        WHERE EMSR = 'Active'
       `;
   
       const result = await request.query(query);
   
       // Check if any riders are returned
       if (result.recordset.length === 0) {
-        return res.status(404).json({ success: false, message: "No hired riders found." });
+        return res.status(404).json({ success: false, message: "No active riders found." });
       }
   
-      // Respond with the hired riders
+      // Respond with the Active riders
       res.json({ success: true, data: result.recordset });
     } catch (err) {
       console.error("Error fetching hired riders:", err.message);
-      res.status(500).json({ success: false, message: "Error fetching hired riders" });
+      res.status(500).json({ success: false, message: "Error fetching active riders" });
     }
   });
 
@@ -599,7 +599,7 @@ router.post('/rider-register-admin', upload, async (req, res) => {
             @BikeLeftImage, 
             @BikeRightImage,
             'Rider', 
-            'Hired',
+            'Active',
             @RegistrationSubmitDate,
             @DetailsCheckedBy,
             'Hired',
