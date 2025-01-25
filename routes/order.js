@@ -143,6 +143,7 @@ router.post("/create-order", async (req, res) => {
 });
 ////////////////////////////////////////////////
 
+
 // Get Orders By Rider ID
 router.get('/orders-for-delivery', async (req, res) => {
   const { riderId } = req.query;
@@ -263,22 +264,68 @@ router.put('/orders/assign', async (req, res) => {
 });
 
 
+// Complete Order API with user-provided date and time
+router.put('/complete-order', async (req, res) => {
+  const { orderId, deliveryDate, deliveryTime,deliveryCoordinates } = req.query;
+
+  const missingFields = [];
+  if (!orderId) missingFields.push('orderId');
+  if (!deliveryDate) missingFields.push('deliveryDate');
+  if (!deliveryTime) missingFields.push('deliveryTime');
+  if (!deliveryCoordinates) missingFields.push('deliveryCoordinates');
+
+  if (missingFields.length > 0) {
+      return res.status(400).json({ 
+          success: false, 
+          message: `Missing required fields: ${missingFields.join(', ')}` 
+      });
+  }
+
+  try {
+    const request = new sql.Request();
+    request.input('orderId', sql.Int, orderId);
+
+    // Check if the OrderID exists and its status
+    const checkOrderQuery = `SELECT OStatus FROM OrdersDetail WHERE OID = @orderId`;
+    const orderResult = await request.query(checkOrderQuery);
+
+    if (orderResult.recordset.length === 0) {
+      return res.status(404).json({ success: false, message: 'Order ID not found.' });
+    }
+
+    const orderStatus = orderResult.recordset[0].OStatus;
+    if (orderStatus === 'Delivered') {
+      return res.status(400).json({ success: false, message: 'Order is already delivered.' });
+    }
+
+    // Update the Order with the provided date, time, and set status to 'Delivered'
+    const completeOrderQuery = `
+      UPDATE OrdersDetail
+      SET DDate = @deliveryDate, DTime = @deliveryTime, OStatus = 'Delivered',@deliveryCoordinates = DCLALO
+      WHERE OID = @orderId
+    `;
+
+    request.input('deliveryDate', sql.NVarChar, deliveryDate);
+    request.input('deliveryTime', sql.NVarChar, deliveryTime);
+    request.input('deliveryCoordinates', sql.NVarChar, deliveryCoordinates);
+
+    await request.query(completeOrderQuery);
+
+    res.json({ success: true, message: 'Order marked as delivered successfully.' });
+  } catch (err) {
+    console.error('Error completing order:', err);
+    res.status(500).json({ success: false, message: 'Oops Server Side Error!' });
+  }
+});
+//
+
 
 // 2. Get All Orders (Working)
-router.get('/orders-all', async (req, res) => {
+router.get('/all-orders', async (req, res) => {
   try {
       const query = `
           SELECT 
-              OID AS OrderID, 
-              OInvN AS InvoiceNumber, 
-              OStatus AS Status, 
-              CFN AS CustomerName, 
-              CCN AS ContactNumber, 
-              ODAddress AS DeliveryAddress, 
-              DDate AS DeliveryDate, 
-              DTime AS DeliveryTime, 
-              RFN AS RiderName, 
-              RUID AS RiderID
+              *
           FROM OrdersDetail
       `;
 
@@ -286,7 +333,7 @@ router.get('/orders-all', async (req, res) => {
       const orders = result.recordset;
 
       for (const order of orders) {
-          order.Items = await fetchItemsByOrderId(order.OrderID);
+          order.Items = await fetchItemsByOrderId(order.OID);
       }
 
       res.json({success:true,data:orders});
@@ -295,6 +342,7 @@ router.get('/orders-all', async (req, res) => {
       res.status(500).json({ success:false,message: 'Oops Server Side Error!' });
   }
 });
+
 
 // 3. Get Orders by Status (Working)
 router.get('/orders-status', async (req, res) => {
@@ -345,6 +393,7 @@ router.get('/orders-status', async (req, res) => {
   }
 });
 
+
 // 4. Get Orders by OrderID (Working)
 router.get('/orders-byId', async (req, res) => {
   const { orderId } = req.query;
@@ -387,6 +436,7 @@ router.get('/orders-byId', async (req, res) => {
       res.status(500).json({ success:false, message: 'Oops Server Side Error!' });
   }
 });
+
 
 // 5. Get Orders by Invoice Number (Working)
 router.get('/orders-byInvoiceNumber', async (req, res) => {
@@ -431,6 +481,7 @@ router.get('/orders-byInvoiceNumber', async (req, res) => {
       res.status(500).json({ success:false, message: 'Oops Server Side Error!' });
   }
 });
+
 
 // 6. Get Orders by Rider ID (Working)
 router.get('/orders-byRiderUID', async (req, res) => {

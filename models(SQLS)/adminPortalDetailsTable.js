@@ -10,19 +10,18 @@ const createAdminPortalDetailsTable = async () => {
 
   const createTableQuery = `
     CREATE TABLE AdminPortalDetails (
-      ID INT NOT NULL,                            -- INT ID Auto Increament 1
-      UFN NVARCHAR(100) NOT NULL,                 -- User Full Name
-      UP NVARCHAR(50) NOT NULL,                   -- User Password
-      UUID INT NOT NULL PRIMARY KEY,              -- User Unique ID
-      UAT NVARCHAR(255),                          -- User Auth Token
-      CUAOR BIT NOT NULL DEFAULT 0,               -- Can User Assign Orders (true/false)
-      CUOR BIT NOT NULL DEFAULT 0,                -- Can User Open Reports (true/false)
-      CUTAFR BIT NOT NULL DEFAULT 0,              -- Can User Take Action For Rider (true/false)
-      CUCRD BIT NOT NULL DEFAULT 0,               -- Can User Change Rider Details (true/false)
-      UT NVARCHAR(50) NOT NULL,                   -- User Type
-      CUCP BIT NOT NULL DEFAULT 0,                -- Can User Clear Payments (true/false)
-      CUCFC BIT NOT NULL DEFAULT 0,               -- Can User Calculate Fuel Consumption (true/false)
-      CUGRLLC BIT NOT NULL DEFAULT 0              -- Can User Get Rider Live Location Coordinates (true/false)
+      ID INT NOT NULL,                           -- INT ID Auto Increament 1
+      UFN NVARCHAR(100) NOT NULL,                -- User Full Name
+      UP NVARCHAR(50) NOT NULL,                  -- User Password
+      UUID NVARCHAR(50) NOT NULL,                -- User Unique ID
+      UAT NVARCHAR(255),                         -- User Auth Token
+      UAOrders NVARCHAR(50) NOT NULL,            -- Can User Assign Orders (true/false)
+      CUOUManagement NVARCHAR(50) NOT NULL,      -- Can User Open User Management (true/false)
+      CUORManagement NVARCHAR(50) NOT NULL,      -- Can User Open Rider Management (true/false)
+      UType NVARCHAR(50) NOT NULL,               -- User Type
+      CUCPayments NVARCHAR(50) NOT NULL,         -- Can User Clear Payments (true/false)
+      CUORidesR NVARCHAR(50) NOT NULL,           -- Can User Open Rides Record (true/false)
+      CUORTraking NVARCHAR(50) NOT NULL          -- Can User Open Riders Tracking (true/false)
     );
   `;
 
