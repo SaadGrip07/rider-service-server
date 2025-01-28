@@ -12,7 +12,7 @@ const createRidersDetailTable = async () => {
   CREATE TABLE RidersDetail (
       ID INT IDENTITY(1,1) PRIMARY KEY,       -- Auto-incremented ID
       RUID NVARCHAR(50),                      -- Rider Unique ID
-      RAT NVARCHAR(100),                      -- Rider Auth Token
+      RAT NVARCHAR(255),                      -- Rider Auth Token
       RFCMT NVARCHAR(100),                    -- Rider FCM Token
       PIOR NVARCHAR(255),                     -- Profile Image Of Rider
       RFN NVARCHAR(255) NOT NULL,             -- Rider Full Name
