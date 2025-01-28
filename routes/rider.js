@@ -341,6 +341,44 @@ router.put('/status-update-rider', async (req, res) => {
 });
 
 
+// Update Rider Status For Check In & Check Out OR On Route ✅
+router.put('/fcm-token-update', async (req, res) => {
+    const { riderId,fcmToken } = req.query;
+
+        // Check for required fields
+        const missingFields = [];
+        if (!riderId) missingFields.push('riderId');
+        if (!fcmToken) missingFields.push('fcmToken');
+    
+        if (missingFields.length > 0) {
+            return res.status(400).json({ 
+                success: false, 
+                message: `Missing required fields: ${missingFields.join(', ')}` 
+            });
+        }
+      
+    await RMDBConnect;
+    try {
+        const request = new sql.Request();
+        // Check if rider exists
+        const checkRiderQuery = `SELECT * FROM RidersDetail WHERE RUID = @RiderUID`;
+        request.input('RiderUID', sql.NVarChar, riderId);
+        const riderCheckResult = await request.query(checkRiderQuery);
+
+        if (riderCheckResult.recordset.length === 0) {
+            return res.status(404).json({ message: 'Rider not found.' });
+        }
+
+    const updateQuery = `UPDATE RidersDetail SET RFCMT = '${fcmToken}' WHERE RUID = '${riderId}'`;
+    await request.query(updateQuery);
+    res.json({ success: true,message: "FCM Token Updated Successfully" });
+    } catch (err) {
+          console.error(err.message);
+          res.status(500).json({ success:false,message: "Oops Server Side Error!"});
+    }
+});
+
+
 // Fetch All Riders API ✅
 router.get('/all-riders', async (req, res) => {
     await RMDBConnect;
