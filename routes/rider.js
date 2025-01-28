@@ -466,7 +466,7 @@ router.put("/status-update-rider", async (req, res) => {
   }
 });
 
-// Update Rider Status For Check In & Check Out OR On Route ✅
+// Update Rider FCM Token ✅
 router.put("/fcm-token-update", async (req, res) => {
   const { riderId, fcmToken } = req.query;
 
